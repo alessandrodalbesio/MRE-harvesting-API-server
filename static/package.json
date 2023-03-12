@@ -1,0 +1,10 @@
+{
+  "dependencies": {
+    "@fortawesome/fontawesome-free": "^6.3.0",
+    "bootstrap": "^5.3.0-alpha1",
+    "jquery": "^3.6.4",
+    "three": "^0.150.1",
+    "@types/dat.gui": "^0.7.7",
+    "dat.gui": "^0.7.9"
+  }
+}
