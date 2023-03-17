@@ -1,7 +1,7 @@
 import sqlite3
 import uuid
-from errorHandling import *
-from settings import *
+from modules.errors import *
+from modules.settings import *
 
 
 ### Global functions definition ###

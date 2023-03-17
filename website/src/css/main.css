@@ -1,0 +1,19 @@
+/* Global style */
+body {
+  background-color: #f7f9fc;
+}
+
+/* Header style */
+body > .header h1 {
+  font-size: 25px;
+  font-weight: bold;
+}
+
+body > .header button {
+  font-weight: 500;
+  border-radius: 10px;
+}
+
+body > .header button > span {
+  margin-right: 5px;
+}

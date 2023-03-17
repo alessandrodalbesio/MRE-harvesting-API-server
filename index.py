@@ -1,8 +1,7 @@
 from flask import Flask, request
+from modules.settings import *
+from modules.serverImplementation import *
 from flask_socketio import SocketIO, ConnectionRefusedError, join_room, emit
-from settings import *
-import dbManagement as db
-from serverFunctions import *
 
 
 # GENERAL SETTINGS
@@ -100,5 +99,4 @@ def unlock_model():
 # INITIALIZE APP
 
 if __name__ == "__main__":
-    #db.unlockAllModels()
     socketio.run(app, host = HOST, port = PORT, debug = DEBUG_ACTIVE)

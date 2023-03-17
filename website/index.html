@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <!-- meta tags definition -->
+    <title>Index</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <meta description="" />
+    <meta author="Alessandro Dalbesio" />
+
+    <!-- CSS loading -->
+    <link rel="stylesheet" href="node_modules/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="node_modules/@fortawesome/fontawesome-free/css/all.min.css" />
+    <link rel="stylesheet" href="assets/css/index.css" />
+    <link rel="stylesheet" href="assets/css/main.css" />
+  </head>
+
+  <body>
+    <div class="container mt-4 header">
+      <div class="row">
+        <div class="d-none d-sm-block col-auto">
+          <h1>ProjectName manage</h1>
+        </div>
+        <div class="ms-auto col-auto">
+          <button type="button" class="btn btn-primary shadow-sm new-model">
+            <span>Upload new model</span> <i class="fa-solid fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <div class="container mt-4 search-bar">
+      <div class="row">
+        <div class="col-12">
+          <input type="text" placeholder="Insert model name" />
+        </div>
+      </div>
+    </div>
+
+    <div class="container models"></div>
+
+    <div class="container banner" data-model_id="">
+      <div class="row g-3">
+        <div class="col-12">
+          <div class="container">
+            <i class="fa-solid fa-xmark close-banner"></i>
+            <div class="row header">
+              <div class="col-12">
+                <span class="title" contenteditable="true"></span>
+                <div class="alert alert-warning"></div>
+              </div>
+            </div>
+            <div class="row mt-2 body">
+              <div class="col-12 title">
+                <h5>Available Texture</h5>
+              </div>
+              <div class="col-12 upload">
+                <div class="form-group mt-3">
+                  <label for="uploadTexture">Upload a new texture</label>
+                  <input type="file" class="form-control" id="uploadTexture" />
+                </div>
+              </div>
+            </div>
+            <div class="row mt-4 delete-model">
+              <div class="col-12">
+                <h5>Danger area</h5>
+                <button class="btn btn-danger">Delete model</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div id="banner-overlay" class="banner-overlay"></div>
+
+    <!-- Modal -->
+    <div
+      class="modal fade"
+      id="confirmModal"
+      data-bs-backdrop="static"
+      data-bs-keyboard="false"
+      tabindex="-1"
+      aria-labelledby="staticBackdropLabel"
+      aria-hidden="true"
+    >
+      <div class="modal-dialog">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="staticBackdropLabel">Confirm action</h5>
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="Close"
+            ></button>
+          </div>
+          <div class="modal-body"></div>
+          <div class="modal-footer">
+            <button
+              type="button"
+              class="btn btn-secondary"
+              data-bs-dismiss="modal"
+            >
+              No, I've changed my mind
+            </button>
+            <button type="button" class="btn btn-primary confirmButton">
+              Yes I confirm
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- JS loading -->
+    <script src="node_modules/bootstrap/dist/js/bootstrap.min.js"></script>
+    <script src="node_modules/jquery/dist/jquery.min.js"></script>
+    <script src="dist/index.js"></script>
+    <script src="assets/js/index.js"></script>
+  </body>
+</html>

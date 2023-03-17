@@ -1,0 +1,23 @@
+{
+  "name": "server",
+  "version": "1.0.0",
+  "description": "",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "webpack"
+  },
+  "author": "Alessandro Dalbesio",
+  "license": "ISC",
+  "devDependencies": {
+    "webpack": "^5.76.1",
+    "webpack-cli": "^5.0.1"
+  },
+  "dependencies": {
+    "bootstrap": "^5.2.3",
+    "css-loader": "^6.7.3",
+    "file-loader": "^6.2.0",
+    "jquery": "^3.6.4",
+    "style-loader": "^3.3.1"
+  }
+}

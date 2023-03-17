@@ -1,6 +1,6 @@
-import dbManagement as db
-from errorHandling import *
-from settings import *
+import modules.db as db
+from modules.errors import *
+from modules.settings import *
 import os, shutil
 
 ## Data retrieval ##
