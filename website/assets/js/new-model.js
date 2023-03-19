@@ -1,132 +1,245 @@
-/* Import all the needed modules */
-import * as modelPreviewManagement from "./model-preview.js";
+import modelPreviewManager from "modelPreview";
 
-function saveModelImage() {
-  const canvas = document.getElementById("model_preview");
-  const dataURL = canvas.toDataURL("image/png");
-  return dataURL;
-}
+/* Page parameters definition */
+const MAX_MODEL_FILE_SIZE = 10000000; // 10MB
+const MAX_MODEL_NAME_LENGTH = 50; // 50 characters
+const MODEL_EXTENSIONS = ['obj']; // Supported model extensions
 
-function alertBanner(message) {
-  $("#alert-details").text(message);
-  $(".alert").show();
-  setTimeout(function () {
-    $(".alert").hide();
-  }, 3000);
-}
+const MAX_TEXTURE_FILE_SIZE = 10000000; // 10MB
+const IMG_TEXTURE_EXTENSIONS = ['jpg', 'jpeg', 'png']; // Supported image extensions
 
-$("#modelFile").change(function () {
-  const modelFile = $("#modelFile")[0].files[0];
-  if (modelFile.name.split(".").pop() !== "obj") {
-    alertBanner("The model file must have an obj extension");
-    $("#modelFile").val("");
-    return;
-  }
-  /* Get file url */
-  const url = URL.createObjectURL(modelFile);
-  $(".model-preview").show();
-  $(".model-preview > canvas").hide();
-  $(".model-preview > img").show();
-  load_obj_model_preview(url);
-});
+const MIN_PAGE_WIDTH = 992; // The maximum width of the page
+const CANVAS_WIDTH_RATION = 0.7; // The width of the canvas is 70% of the page width
+const CANVAS_HEIGHT_RATION = 0.5; // The height of the canvas is 60% of the page width
+
+const VERIFY_WITH_SERVER = false; // If true, the input will be verified with the server
+
 
 $(document).ready(function () {
+
+  /* ###### Page management code ###### */
+
+  /* Definition of the modelPreview */
+  const modelPreview = new modelPreviewManager('model-preview');
+
+  /* Resizing of the canvas based on the width of the container and verify that the device is not too small */
+  (function () {
+    const bodyWidth = $("#body").width();
+    if (window.innerWidth > MIN_PAGE_WIDTH) {
+      modelPreview.resize(bodyWidth*CANVAS_WIDTH_RATION,bodyWidth*CANVAS_HEIGHT_RATION)
+    } else {
+      window.location.href = "http://"+DOMAIN+"/error-pages/device-is-small.html"
+    }
+  })();
+
+
+  /* Manage input name input */
+  $("#modelNameInput").change(function () {
+    if(isInputValidType($(this), "The model name", "string") && isInputValidLength($(this), "The model name", MAX_MODEL_NAME_LENGTH)) {
+      if(VERIFY_WITH_SERVER) {
+        /* Verify that the model name is not taken */
+        $.ajax({
+          url: API_URL + "/models/name/" + $(this).val(),
+          type: "GET",
+          dataType: "json",
+          success: function (response) {
+            if (response.status === "success") {
+              addValidInputClass($("#modelNameInput"));
+            } else {
+              displayInputFeedback($("#modelNameInput"), "The model name is already taken");
+            }
+          },
+          error: function (response) {
+            alertBanner("An error occurred while verifying the model name", false);
+          }
+        });
+      } else {
+        addValidInputClass($(this));
+      }
+    }
+    showUploadButton();
+  });
+
+
+  /* Manage 3D model input */
+  $("#modelFileInput").change(function () {
+    /* Validation */
+    if(isFileNotUndefined($(this)) && isFileValidExtension($(this), "The model file", MODEL_EXTENSIONS) && isFileValidWeight($(this), "The model file", MAX_MODEL_FILE_SIZE)) {
+      addValidInputClass($(this));
+
+      /* Manage preview */
+      modelPreview.loadModelInScene(URL.createObjectURL($(this)[0].files[0]));
+      $("#model-preview-row").removeClass('hide');
+
+      /* Manage texture selection */
+      $("#texture-selection-row").removeClass('hide');
+      $("#texture-selection-row .need-validation").removeClass('need-validation is-valid');
+      $("#texture-selection-row div").not(".texture-input-method").addClass('need-validation col-12').prop('selectedIndex',0);
+      $(".texture-input-method").hide();
+      $("#texture-image, #texture-color").val("");
+    }
+    else {
+      $("#texture-selection-row, #model-preview-row").addClass('hide');
+    }
+    /* Manage upload button */
+    showUploadButton();
+
+    /*** 
+      NOTE: in this case it has been used the class 'hide' instead of the methods hide() and show() to avoid having problems with the default 
+            stype of the class .row 
+    ***/
+  });
+
+
+  /* Manage texture input methods */
+  $("#selectTextureInputMethod").change(function () {
+    /* Resize the input method container */
+    $(this).parent().removeClass("col-12 need-validation").addClass('col-6');
+
+    /* Show only the input method selected */
+    const selectedValue = $(this).val();
+    $(".texture-input-method").hide();
+    if (selectedValue === "image") {
+      $("#texture-image").parent().addClass('need-validation').show();
+      $("#texture-color").parent().removeClass('need-validation is-valid');
+      $("#texture-color").val("");
+      modelPreview.applyTextureToModelFromColor(modelPreview.defaultObjectColor);
+    } else if (selectedValue === "color") {
+      $("#texture-color").parent().addClass('need-validation').show();
+      $("#texture-color").val(modelPreview.defaultObjectColor);
+      addValidInputClass($("#texture-color"));
+      $("#texture-image").parent().removeClass('need-validation is-valid');
+      $("#texture-image").val("");
+    } else {
+      $(this).parent().removeClass("col-6").addClass('col-12 need-validation');
+      modelPreview.applyTextureToModelFromColor(modelPreview.defaultObjectColor);
+    }
+    showUploadButton();
+  });
+
+
+  /* Manage texture color upload */
+  $("#texture-color").change(function () {
+    if(isInputValidColor($(this), "The texture color")) {
+      addValidInputClass($(this));
+      modelPreview.applyTextureToModelFromColor($(this).val());
+    }
+    showUploadButton();
+  });
+
+  
+  /* Manage texture image upload */
+  $("#texture-image").change(function () {
+    if(isFileNotUndefined($(this)) && isFileValidExtension($(this), "The texture image", IMG_TEXTURE_EXTENSIONS) && isFileValidWeight($(this), "The texture image", MAX_TEXTURE_FILE_SIZE)) {
+      addValidInputClass($(this));
+      modelPreview.applyTextureToModelFromImage(URL.createObjectURL($("#texture-image")[0].files[0]));
+    }
+    showUploadButton();
+  });
+
+
+  /* Manage upload button */
+  function showUploadButton() {
+    if ($(".need-validation.is-valid").length === $(".need-validation").length) {
+      $("#upload").show();
+    } else {
+      $("#upload").hide();
+    }
+  }
+
+  /* General purpose functions */
+  $(".return").click(() => {window.location.href = "index.html"});
+
+
+  /* Model preview settings */
+  let defaultAmbientLight = modelPreview.defaultAmbientLight;
+  $('#toggleAmbientLight').prop('checked', defaultAmbientLight);
+  $('#toggleAmbientLight').change(function () {
+    if(!modelPreview.changeLightInScene()) {
+      alertBanner('Something went wrong.');
+    }
+    else {
+      defaultAmbientLight = !defaultAmbientLight;
+      if(defaultAmbientLight) {
+        $("#toggleShadows").parent().hide();
+      } else {
+        $("#toggleShadows").parent().show();
+      }
+    }
+  });
+
+  $('#toggleShadows').prop('checked', modelPreview.defaultShadows);
+  $('#toggleShadows').click(function () { 
+    if(!modelPreview.toggleShadows())
+      alertBanner('Something went wrong.');
+  });  
+
+  $('#groundColor').val(modelPreview.defaultGroundColor);
+  $('#groundColor').change(function () { 
+    if(!modelPreview.setGroundColor($(this).val()))
+      alertBanner('Something went wrong.');
+  });
+
+  $('#groundVisibility').prop('checked', modelPreview.defaultGroundVisibility);
+  $('#groundVisibility').click(function () { 
+    if(!modelPreview.toggleGroundVisibility())
+      alertBanner('Something went wrong.');
+  });
+
+  $('#backgroundColor').val(modelPreview.defaultBackgroundColor);
+  $('#backgroundColor').change(function () { 
+    if(!modelPreview.setBackgroundColor($(this).val()))
+      alertBanner('Something went wrong.');
+  });
+
+
+  /* ###### Upload code ###### */
+  /* Upload data to the server */
   $("#upload").click(function () {
-    /* Get all the inputs */
-    const modelName = $("#modelName").val();
-    const modelFile = $("#modelFile")[0].files[0];
-    const textureInputMethod = $("#selectTextureInputMethod").val();
-    const mtlFile = $("#mtlFile")[0].files[0];
-    const image = $("#image")[0].files[0];
-    const color = $("#color").val();
 
-    /* Verify that the model name has been inserted */
-    if (modelName === "") {
-      alertBanner("Please insert the model name");
-      return;
-    }
-
-    /* Make all the checks for the model file */
-    if (modelFile === undefined) {
-      alertBanner("Please upload the model file");
-      return;
-    }
-
-    /* Make all the checks for the texture input method */
-    if (textureInputMethod.val() === "default") {
-      alertBanner("Please select the texture input method");
-      return;
-    }
-
-    /* Make all the checks for the mtl file */
-    if (
-      textureInputMethod.val() === "mtl_file" &&
-      $("#mtlFile")[0].files[0] === undefined
-    ) {
-      alertBanner("Please upload the mtl file");
-      return;
-    } else {
-      if (mtlFile.name.split(".")[1] !== "mtl") {
-        alertBanner("The mtl file must be an mtl file");
-        return;
-      }
-    }
-
-    if (
-      textureInputMethod.val() === "image" &&
-      $("#image")[0].files[0] === undefined
-    ) {
-      alertBanner("Please upload the image file");
-      return;
-    } else {
-      if (
-        imageFile.name.split(".")[1] !== "png" &&
-        imageFile.name.split(".")[1] !== "jpg" &&
-        imageFile.name.split(".")[1] !== "jpeg"
-      ) {
-        alertBanner("The image file must be a png, jpg or jpeg file");
-        return;
-      }
-    }
-
-    /* Create the form data */
+    /* Prepare the form data */
     const formData = new FormData();
-    formData.append("modelName", modelName);
-    formData.append("modelFile", modelFile);
-    formData.append("textureInputMethod", textureInputMethod);
-    formData.append("texture", texture);
-    formData.append("modelPreviewImage", saveModelImage());
+    formData.append("name", $("#modelNameInput").val());
+    formData.append("model", $("#modelFileInput")[0].files[0]);
+    formData.append("model-preview-screenshoot", modelPreview.captureScreenshot());
+    switch($("#selectTextureInputMethod").val()) {
+      case "image":
+        formData.append("texture-type", "image")
+        formData.append("texture-data", $("#texture-image")[0].files[0]);
+        break;
+      case "color":
+        formData.append("texture-type", "color")
+        formData.append("texture-data", $("#texture-color").val());
+        break;
+      default:
+        alertBanner('Something went wrong');
+        return;
+    }
 
-    /* Send the request */
+    /* Send the data to the server */
     $.ajax({
-      url: "upload_model.php",
+      url: API_URL + "/data",
       type: "POST",
       data: formData,
       processData: false,
       contentType: false,
-      success: function (data) {
-        console.log(data);
+      success: function (response) {
+        if (response.status === "success") {
+          alertBanner("The model has been uploaded successfully", true);
+          $("#modelNameInput, #modelFileInput, #texture-image, #texture-color").val("");
+          $("#texture-selection-row, #model-preview-row").addClass('hide');
+          $("#upload").hide();
+          $("#texture-selection-row .need-validation").removeClass('need-validation is-valid');
+          $("#texture-selection-row div").not(".texture-input-method").addClass('need-validation col-12').prop('selectedIndex',0);
+          $(".texture-input-method").hide();
+        } else {
+          alertBanner("An error occurred while uploading the model", false);
+        }
       },
-      error: function (data) {
-        console.log(data);
-      },
+      error: function (response) {
+        alertBanner("An error occurred while uploading the model", false);
+      }
     });
   });
 
-  /* Show texture input methods based on the selected input method */
-  $("#selectTextureInputMethod").change(function () {
-    const selectedValue = $(this).val();
-    $(".texture-input-method").hide();
-    if (selectedValue === "mtl_file") {
-      $("#mtlFile").parent().show();
-    } else if (selectedValue === "image") {
-      $("#image").parent().show();
-    } else if (selectedValue === "color") {
-      $("#color").parent().show();
-    }
-  });
-
-  $(".return").click(function () {
-    window.location.href = "index.html";
-  });
-});
+})

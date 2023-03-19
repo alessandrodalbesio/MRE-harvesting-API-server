@@ -1,10 +1,18 @@
-.body {
+/* General*/
+#body {
     background-color: white;
     border-radius: 10px;
     box-shadow: 0 4px 8px 0 rgba(0, 0, 0, 0.05), 0 6px 20px 0 rgba(0, 0, 0, 0.05);
     padding: 20px;
 }
+h4 {
+    font-weight: bold;
+}
+.hide {
+    display: none;
+}
 
+/* Form */
 .form-label {
     margin-bottom: 2px !important;
     font-weight: bold;
@@ -15,46 +23,37 @@ input[type="color"] {
     height: 38px;
 }
 
-div.model-preview {
-    text-align: center;
-    width: 100%;
-    margin-top: 25px;
-    width: 600px;
-    height: 400px;
-    display: none;
+/* Model preview */
+#model-preview-row > div {
+    display: flex;
+    flex-direction: row;
 }
-
-#upload {
-    display: none;
+#model-preview-row > p {
+    margin-top: 0px;
+    margin-bottom: 0px;
 }
-
-
-div.model-preview > canvas {
-    width: 600px;
-    height: 400px;
+#model-preview > canvas {
     border-radius: 15px;
-    display: none;
 }
-
-.texture-input-method {
-    display: none;
+#model-preview-options  {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+     -khtml-user-select: none;
+       -moz-user-select: none;
+        -ms-user-select: none;
+            user-select: none;
 }
-
-.alert {
-    display: none;
+#model-preview-options {
+    margin-left: 15px;
+    width: 100%;
 }
-
-div.model-preview>img {
-    display: none;
+.elements-block {
+    margin-top: 20px;
 }
-
-div.model-preview>img {
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    transform: translate(-50%, -50%);
-    z-index: 1;
+.element {
+    margin-top: 10px;
 }
-.model-preview > canvas {
+/* Upload button */
+#upload {
     display: none;
 }

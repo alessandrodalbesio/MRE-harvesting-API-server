@@ -17,3 +17,23 @@ body > .header button {
 body > .header button > span {
   margin-right: 5px;
 }
+
+/* Alert */
+.alert {
+  display: none;
+  position: relative;
+  padding-right: 2rem
+}
+
+.alert > i {
+  position: absolute;
+  right: 1rem;
+  padding-top: 5px;
+}
+
+/* Input validation */
+.input-feedback {
+  display: none;
+  color: red;
+  font-size: 15px;
+}
