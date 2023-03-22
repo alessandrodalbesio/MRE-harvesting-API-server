@@ -154,16 +154,48 @@ class modelPreviewManager {
 
 
     captureScreenshot() {
-        return {
-            'img': this.renderer.domElement.toDataURL("image/png"),
-            'cameraPosition': this.camera.position,
-            'cameraRotation': this.camera.rotation,
+        const dataURLtoFile = function(dataurl, filename) {
+ 
+            var arr = dataurl.split(','),
+                mime = arr[0].match(/:(.*?);/)[1],
+                bstr = atob(arr[1]), 
+                n = bstr.length, 
+                u8arr = new Uint8Array(n);
+                
+            while(n--){
+                u8arr[n] = bstr.charCodeAt(n);
+            }
+            
+            return new File([u8arr], filename, {type:mime});
+        }
+        const componentToHex = function(c) {
+            var hex = c.toString(16);
+            return hex.length == 1 ? "0" + hex : hex;
+        }
+          
+        const rgbToHex = function(color) {
+            let r = Math.round(color.r * 255);
+            let g = Math.round(color.g * 255);
+            let b = Math.round(color.b * 255);
+            return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
+        }
+
+        let rendererColor = new THREE.Color();
+        this.renderer.getClearColor(rendererColor);
+        return  {
+            'img': dataURLtoFile(this.renderer.domElement.toDataURL("image/png"), 'preview.png'),
+            'cameraPositionX': this.camera.position.x,
+            'cameraPositionY': this.camera.position.y,
+            'cameraPositionZ': this.camera.position.z,
+            'cameraRotationX': this.camera.rotation.x,
+            'cameraRotationY': this.camera.rotation.y,
+            'cameraRotationZ': this.camera.rotation.z,
             'cameraZoom': this.camera.zoom,
-            'groundColor': this.ground.material.color.getHex(),
+            'groundColor': rgbToHex(this.ground.material.color),
             'groundVisibility': this.ground.visible,
-            'backgroundColor': this.renderer.getClearColor().getHex(),
             'ambientLightInScene': this.ambientLightInScene,
-            'shadows': this.lightDirectional.castShadow
+            'shadows': this.lightDirectional.castShadow,
+            'backgroundColor': rgbToHex(rendererColor),
         }
     }
 

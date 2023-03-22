@@ -197,19 +197,24 @@ $(document).ready(function () {
   /* Upload data to the server */
   $("#upload").click(function () {
 
+    let cameraInfo = modelPreview.captureScreenshot();
+    let cameraPhoto = cameraInfo.img;
+    delete cameraInfo.img;
+
     /* Prepare the form data */
     const formData = new FormData();
-    formData.append("name", $("#modelNameInput").val());
+    formData.append("modelName", $("#modelNameInput").val());
     formData.append("model", $("#modelFileInput")[0].files[0]);
-    formData.append("model-preview-screenshoot", modelPreview.captureScreenshot());
+    formData.append("cameraInfo", JSON.stringify(cameraInfo));
+    formData.append("cameraPhoto", cameraPhoto);
     switch($("#selectTextureInputMethod").val()) {
       case "image":
-        formData.append("texture-type", "image")
-        formData.append("texture-data", $("#texture-image")[0].files[0]);
+        formData.append("textureType", "image")
+        formData.append("textureImage", $("#texture-image")[0].files[0]);
         break;
       case "color":
-        formData.append("texture-type", "color")
-        formData.append("texture-data", $("#texture-color").val());
+        formData.append("textureType", "color")
+        formData.append("textureColor", $("#texture-color").val());
         break;
       default:
         alertBanner('Something went wrong');
@@ -218,12 +223,15 @@ $(document).ready(function () {
 
     /* Send the data to the server */
     $.ajax({
-      url: API_URL + "/data",
+      url: "http://127.0.0.1:5000/upload-model",
       type: "POST",
       data: formData,
       processData: false,
       contentType: false,
+      cache: false,
       success: function (response) {
+        console.log(response);
+        return
         if (response.status === "success") {
           alertBanner("The model has been uploaded successfully", true);
           $("#modelNameInput, #modelFileInput, #texture-image, #texture-color").val("");
@@ -237,6 +245,7 @@ $(document).ready(function () {
         }
       },
       error: function (response) {
+        console.log(response.responseText);
         alertBanner("An error occurred while uploading the model", false);
       }
     });
