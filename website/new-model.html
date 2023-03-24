@@ -42,17 +42,17 @@
             <div class="alert-banner" id="main-alert"></div>
 
             <!-- Form that doesn't send data -->
-            <form id="upload-form" autocomplete="off">
+            <div id="upload-form">
                 <!-- Model input row (Model Name and 3D Model inputs) -->
                 <div class="row g-3" id="model-input-row">
                     <div class="col need-validation">
                         <label for="modelNameInput" class="form-label">Model Name</label>
-                        <input type="text" id="modelNameInput" class="form-control" placeholder="Model name">
+                        <input type="text" autocomplete="off" id="modelNameInput" class="form-control" placeholder="Model name">
                         <span class="input-feedback"></span>
                     </div>
                     <div class="col need-validation">
                         <label for="modelFileInput" class="form-label">3D Model</label>
-                        <input type="file" id="modelFileInput" class="form-control" accept=".obj">
+                        <input type="file" id="modelFileInput" class="form-control" accept=".obj" autocomplete="off">
                         <span class="input-feedback"></span>
                     </div>
                 </div>
@@ -61,7 +61,7 @@
                 <div class="row g-3 mt-1 hide" id="texture-selection-row">
                     <div class="col-12 need-validation">
                         <label for="modelName" class="form-label">Texture Input Method</label>
-                        <select class="form-select" id="selectTextureInputMethod">
+                        <select class="form-select" id="selectTextureInputMethod" autocomplete="off">
                             <option selected value="default">Choose...</option>
                             <option value="image">Upload image as texture</option>
                             <option value="color">Select color</option>
@@ -69,12 +69,12 @@
                     </div>
                     <div class="col-6 texture-input-method hide">
                         <label for="texture-image" class="form-label">Texture Image</label>
-                        <input type="file" id="texture-image" class="form-control" accept=".png,.jpg,.jpeg">
+                        <input type="file" id="texture-image" class="form-control" accept=".png,.jpg,.jpeg" autocomplete="off">
                         <span class="input-feedback"></span>
                     </div>
                     <div class="col-6 texture-input-method hide">
                         <label for="texture-color" class="form-label">Texture Color</label>
-                        <input type="color" id="texture-color" class="form-control">
+                        <input type="color" id="texture-color" class="form-control" autocomplete="off">
                         <span class="input-feedback"></span>
                     </div>
                 </div>
@@ -121,7 +121,7 @@
             </div>
 
             <!-- Submit button -->
-            <button class="btn btn-primary" id="upload">Upload</button>
+            <a class="btn btn-primary" href="#" id="upload">Upload</a>
         </div>
 
         <!-- Script importing -->

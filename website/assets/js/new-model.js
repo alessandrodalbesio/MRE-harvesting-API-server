@@ -14,6 +14,7 @@ const CANVAS_HEIGHT_RATION = 0.5; // The height of the canvas is 60% of the page
 
 const VERIFY_WITH_SERVER = false; // If true, the input will be verified with the server
 
+const UPLOAD_ENDPOINT = "http://127.0.0.1:5000/model";
 
 $(document).ready(function () {
 
@@ -223,30 +224,29 @@ $(document).ready(function () {
 
     /* Send the data to the server */
     $.ajax({
-      url: "http://127.0.0.1:5000/upload-model",
+      url: UPLOAD_ENDPOINT,
       type: "POST",
       data: formData,
       processData: false,
       contentType: false,
       cache: false,
       success: function (response) {
-        console.log(response);
-        return
-        if (response.status === "success") {
-          alertBanner("The model has been uploaded successfully", true);
-          $("#modelNameInput, #modelFileInput, #texture-image, #texture-color").val("");
-          $("#texture-selection-row, #model-preview-row").addClass('hide');
-          $("#upload").hide();
-          $("#texture-selection-row .need-validation").removeClass('need-validation is-valid');
-          $("#texture-selection-row div").not(".texture-input-method").addClass('need-validation col-12').prop('selectedIndex',0);
-          $(".texture-input-method").hide();
-        } else {
-          alertBanner("An error occurred while uploading the model", false);
-        }
+        alertBanner("The model has been uploaded successfully", true);
+        $("#modelNameInput, #modelFileInput, #texture-image, #texture-color").val("");
+        $("#texture-selection-row, #model-preview-row").addClass('hide');
+        $("#upload").hide();
+        $("#texture-selection-row .need-validation").removeClass('need-validation is-valid');
+        $("#texture-selection-row div").not(".texture-input-method").addClass('need-validation col-12').prop('selectedIndex',0);
+        $(".texture-input-method").hide();
       },
       error: function (response) {
-        console.log(response.responseText);
-        alertBanner("An error occurred while uploading the model", false);
+        const jsonResponse = JSON.parse(response.responseText);
+        if (jsonResponse.errorID) {
+          alertBanner(jsonResponse.message+"<br>Tracking error: "+jsonResponse.errorID, false);
+        }
+        else {
+          alertBanner(jsonResponse.message, false);
+        }
       }
     });
   });
