@@ -26,10 +26,10 @@ def connect():
         cur.execute(f"""CREATE TABLE IF NOT EXISTS 'texture' (
             'IDTexture' CHAR({TEXTURE_ID_LENGTH}) PRIMARY KEY, 
             'IDModel' CHAR({MODEL_ID_LENTGH}) NOT NULL,
-            'isDefault' BOOLEAN DEFAULT 0,
-            'isColor' BOOLEAN DEFAULT 0,
+            'isDefault' BOOLEAN NOT NULL DEFAULT 0,
+            'isColor' BOOLEAN NOT NULL DEFAULT 0,
             'colorHex' CHAR(7) DEFAULT NULL,
-            'isImage' BOOLEAN DEFAULT 0,
+            'isImage' BOOLEAN NOT NULL DEFAULT 0,
             'extension' VARCHAR(4) DEFAULT NULL
         )""")
         return con, cur

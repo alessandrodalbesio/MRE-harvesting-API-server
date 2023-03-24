@@ -66,6 +66,21 @@ def getModelInfo(IDModel):
     except sqlite3.Error:
         raise SystemException("Something went wrong during the retrival of the model info", traceback.format_exc())
 
+def getModelInfoByName(modelName):
+    # Validate input
+    if not isModelNameValid(modelName):
+        raise InputException("Model name is not valid", modelName)
+    if not modelNameExists(modelName):
+        raise InputException("Model name does not exist", modelName)
+    try:
+        con, cur = connect()
+        res = cur.execute("SELECT * FROM model WHERE nameModel = :modelName", {"modelName": modelName})
+        modelInfo = res.fetchone()
+        closeConnection(con)
+        return modelInfo
+    except sqlite3.Error:
+        raise SystemException("Something went wrong during the retrival of the model info", traceback.format_exc())
+
 
 ## Creation functions ##
 def createModel(modelID, modelName, cameraInfo, modelExtension):
@@ -164,4 +179,5 @@ def deleteModel(modelID):
         closeConnection(con)
     except sqlite3.Error:
         raise SystemException("Something went wrong during the deletion of the model", traceback.format_exc())
+    
     saveInfoLog(f"Model {modelID} has been deleted")

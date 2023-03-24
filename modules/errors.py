@@ -1,7 +1,6 @@
 import logging, uuid, json, traceback
 from functools import wraps
 
-
 def errorID():
     return str(uuid.uuid4())
 
@@ -21,9 +20,9 @@ class InputException(Exception):
     def __init__(self, message, inputValue = ''):
         super().__init__(message)
         if inputValue != '':
-            logger.warn("Error message: " + message + "\nInput value: " + inputValue.replace("\r", "").replace("\n", ""))
+            logger.warn("Message: " + message + "\nInput value: " + inputValue.replace("\r", "").replace("\n", ""))
         else:
-            logger.warn("Error message: " + message )
+            logger.warn("Message: " + message )
     def errorToJson(self):
         return json.dumps({'message': str(self)})
 
@@ -32,7 +31,6 @@ class SystemException(Exception):
         super().__init__(message)
         errorID = manageSystemException(tracebackError)
         self.errorID = errorID
-        
     def errorToJson(self):
         return json.dumps({'message': str(self), 'errorID': self.errorID})
 

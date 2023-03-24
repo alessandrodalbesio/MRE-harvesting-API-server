@@ -9,23 +9,25 @@ from modules.settings import *
 from modules.errors import *
 from modules.colors import *
 
+
 ## Data retrieval ##
 def getModelsList():
     modelList = dbModels.getModelsList()
     returnList = []
     for model in modelList:
-        print(model[0])
         textureList = dbTextures.getTexturesList(model[0])
-        print(textureList)
         for texture in textureList:
-            if texture[1] == 1:
-                defaultTexture = texture[0]
+            if texture['isDefault'] == 1:
+                defaultTexture = {
+                    'textureID': texture['IDTexture'],
+                    'textureExtension': texture['extension'],
+                }
                 break
         returnList.append({
             'IDModel': model[0],
             'modelName': model[1],
             'defaultTexture': defaultTexture,
-            'textures': [texture[0] for texture in textureList]
+            'textures': textureList
         })
     return returnList
 
@@ -35,8 +37,21 @@ def getModelInfoByID(IDModel):
     return {
         'IDModel': modelInfo[0],
         'modelName': modelInfo[1],
-        'textures': [{'IDTexture': texture[0], 'isDefault': texture[1] == 1} for texture in texturesList]
+        'textures': texturesList
     }
+
+def modelNameAlreadyUsed(modelName):
+    return dbModels.modelNameExists(modelName)
+
+def getModelInfoByName(modelName):
+    return dbModels.getModelInfoByName(modelName)
+
+def getTextureInfoByID(IDTexture):
+    return dbTextures.getTextureInfo(IDTexture)
+
+def getTextureListForModelID(IDModel):
+    return dbTextures.getTexturesList(IDModel)
+
 
 ## Data update ##
 def updateModelName(IDModel, newName):
@@ -47,6 +62,21 @@ def deleteModel(IDModel):
     dbTextures.deleteAllTexturesFromModel(IDModel)
     dbModels.deleteModel(IDModel)
     shutil.rmtree(os.path.join(MODELS_FOLDER, IDModel), ignore_errors=True)
+
+def deleteTexture(IDTexture):
+    try:
+        textureInfo = dbTextures.getTextureInfo(IDTexture)
+        if textureInfo['isDefault'] == 1:
+            raise InputException("Cannot delete default texture")
+        if len(dbTextures.getTexturesList(textureInfo['IDModel'])) == 1:
+            raise InputException("Cannot delete the only texture")
+        dbTextures.deleteTexture(IDTexture)
+        os.remove(os.path.join(MODELS_FOLDER, textureInfo['IDModel'], textureInfo['IDTexture'] + '.' + textureInfo['extension']))
+        os.remove(os.path.join(MODELS_FOLDER, textureInfo['IDModel'], textureInfo['IDTexture'] + '-'+MODEL_TEXTURE_PREVIEW_NAME+'.' + MODEL_TEXTURE_PREVIEW_FORMAT))
+    except SystemException:
+        raise
+    except:
+        raise SystemException("Something went wrong during the deletion of the texture", traceback.format_exc())
 
 ## Data creation ##
 
@@ -100,7 +130,7 @@ def createModel(modelName, modelOBJ, previewInfo):
         # Create the model folder
         os.mkdir(os.path.join(MODELS_FOLDER, modelID))
         # Save the model file
-        modelOBJ.save(os.path.join(MODELS_FOLDER, modelID, SAVED_MODEL_NAME_FILE+'.'+modelExtension))
+        modelOBJ.save(os.path.join(MODELS_FOLDER, modelID, MODEL_FILE_NAME+'.'+modelExtension))
         # Save the model into the database
         dbModels.createModel(modelID, modelName, previewInfo, modelExtension)
     except InputException:
@@ -117,15 +147,17 @@ def createModel(modelName, modelOBJ, previewInfo):
 # TEXTURE CREATION #
 def createTextureByColor(modelID, color, texturePreview, isNewModel = False):
     def rollback():
+        saveInfoLog("START Rollback")
         if textureID != None:
-            if os.path.exists(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+PREVIEW_IMG_NAME_FILE+'.'+PREVIEW_IMG_FORMAT)):
-                os.remove(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+PREVIEW_IMG_NAME_FILE+'.'+PREVIEW_IMG_FORMAT))
-            if os.path.exists(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+DEFAULT_COLOR_IMG_FORMAT)):
-                os.remove(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+DEFAULT_COLOR_IMG_FORMAT))
+            if os.path.exists(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+MODEL_TEXTURE_PREVIEW_NAME+'.'+MODEL_TEXTURE_PREVIEW_FORMAT)):
+                os.remove(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+MODEL_TEXTURE_PREVIEW_NAME+'.'+MODEL_TEXTURE_PREVIEW_FORMAT))
+            if os.path.exists(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+TEXTURE_COLOR_IMG_FORMAT)):
+                os.remove(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+TEXTURE_COLOR_IMG_FORMAT))
             if dbTextures.textureIDExists(textureID):
                 dbTextures.deleteTexture(textureID)
         if isNewModel:
             deleteModel(modelID)
+        saveInfoLog("END Rollback")
     try:
         textureID = None
 
@@ -137,7 +169,7 @@ def createTextureByColor(modelID, color, texturePreview, isNewModel = False):
             raise InputException("Invalid isNewModel value", isNewModel)
         if texturePreview.filename == '':
             raise InputException("No texture preview file")
-        if texturePreview.filename.split('.')[-1] not in VALID_IMG_EXTENSIONS:
+        if texturePreview.filename.split('.')[-1] not in VALID_MODEL_TEXTURE_PREVIEW_EXTENSIONS:
             raise InputException("Invalid texture preview file", texturePreview.filename.split('.')[-1])
         if fileSize(texturePreview) > MAX_IMG_SIZE:
             raise InputException("Texture preview file too big", fileSize(texturePreview))
@@ -147,12 +179,12 @@ def createTextureByColor(modelID, color, texturePreview, isNewModel = False):
         # Manage the texture creation
         textureID = dbTextures.generateTextureID()
         # Save the texture preview
-        texturePreview.save(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+PREVIEW_IMG_NAME_FILE+'.'+PREVIEW_IMG_FORMAT))
+        texturePreview.save(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+MODEL_TEXTURE_PREVIEW_NAME+'.'+MODEL_TEXTURE_PREVIEW_FORMAT))
         # Save the texture on the database
-        dbTextures.createTexture(textureID, modelID, DEFAULT_COLOR_IMG_FORMAT,isNewModel=isNewModel, isColor=True, colorHEX=color)
+        dbTextures.createTexture(textureID, modelID, TEXTURE_COLOR_IMG_FORMAT,isNewModel=isNewModel, isColor=True, colorHEX=color)
         # Create the texture image and save it on the server (used only for the texture selection)
-        im = Image.new(mode="RGB", size=(PREVIEW_IMG_SIZE, PREVIEW_IMG_SIZE), color=convertHexColorToRGB(color))
-        im.save(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+DEFAULT_COLOR_IMG_FORMAT))
+        im = Image.new(mode="RGB", size=(TEXTURE_COLOR_IMG_SIZE, TEXTURE_COLOR_IMG_SIZE), color=convertHexColorToRGB(color))
+        im.save(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+TEXTURE_COLOR_IMG_FORMAT))
     except InputException:
         rollback()
         raise
@@ -169,12 +201,14 @@ def createTextureByColor(modelID, color, texturePreview, isNewModel = False):
 def createTextureByImage(modelID, IMG, texturePreview, isNewModel = False):
     def rollback():
         if textureID != None and extension != None:
-            if os.path.exists(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+PREVIEW_IMG_NAME_FILE+'.'+PREVIEW_IMG_FORMAT)):
-                os.remove(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+PREVIEW_IMG_NAME_FILE+'.'+PREVIEW_IMG_FORMAT))
+            saveInfoLog('START Rollback')
+            if os.path.exists(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+MODEL_TEXTURE_PREVIEW_NAME+'.'+MODEL_TEXTURE_PREVIEW_FORMAT)):
+                os.remove(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+MODEL_TEXTURE_PREVIEW_NAME+'.'+MODEL_TEXTURE_PREVIEW_FORMAT))
             if os.path.exists(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+extension)):
                 os.remove(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+extension))
             if dbTextures.textureIDExists(textureID):
                 dbTextures.deleteTexture(textureID)
+            saveInfoLog('END Rollback')
         if isNewModel:
             deleteModel(modelID)
     try:
@@ -184,13 +218,13 @@ def createTextureByImage(modelID, IMG, texturePreview, isNewModel = False):
             raise InputException("Invalid model ID", modelID)
         if IMG.filename == '':
             raise InputException("No texture file")
-        if IMG.filename.split('.')[-1] not in VALID_IMG_EXTENSIONS:
+        if IMG.filename.split('.')[-1] not in VALID_TEXTURE_EXTENSIONS:
             raise InputException("Invalid texture file", IMG.filename.split('.')[-1])
         if not isinstance(isNewModel, bool):
             raise InputException("Invalid isNewModel value", isNewModel)
         if texturePreview.filename == '':
             raise InputException("No texture preview file")
-        if texturePreview.filename.split('.')[-1] not in VALID_IMG_EXTENSIONS:
+        if texturePreview.filename.split('.')[-1] not in VALID_MODEL_TEXTURE_PREVIEW_EXTENSIONS:
             raise InputException("Invalid texture preview file", texturePreview.filename.split('.')[-1])
         if fileSize(IMG) > MAX_IMG_SIZE:
             raise InputException("Texture file too big", fileSize(IMG))
@@ -205,7 +239,7 @@ def createTextureByImage(modelID, IMG, texturePreview, isNewModel = False):
         textureID = dbTextures.generateTextureID()
         extension = IMG.filename.split('.')[-1]
         # Save the texture preview
-        texturePreview.save(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+PREVIEW_IMG_NAME_FILE+'.'+PREVIEW_IMG_FORMAT))
+        texturePreview.save(os.path.join(MODELS_FOLDER, modelID, textureID+'-'+MODEL_TEXTURE_PREVIEW_NAME+'.'+MODEL_TEXTURE_PREVIEW_FORMAT))
         # Save the texture on the database
         dbTextures.createTexture(textureID, modelID, extension, isNewModel=isNewModel, isColor=False, isImage = True)
         # Save the texture on the server

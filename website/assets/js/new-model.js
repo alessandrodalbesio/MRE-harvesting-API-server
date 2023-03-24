@@ -199,7 +199,7 @@ $(document).ready(function () {
   $("#upload").click(function () {
 
     let cameraInfo = modelPreview.captureScreenshot();
-    let cameraPhoto = cameraInfo.img;
+    let modelWithTexturePreview = cameraInfo.img;
     delete cameraInfo.img;
 
     /* Prepare the form data */
@@ -207,7 +207,7 @@ $(document).ready(function () {
     formData.append("modelName", $("#modelNameInput").val());
     formData.append("model", $("#modelFileInput")[0].files[0]);
     formData.append("cameraInfo", JSON.stringify(cameraInfo));
-    formData.append("cameraPhoto", cameraPhoto);
+    formData.append("modelWithTexturePreview", modelWithTexturePreview);
     switch($("#selectTextureInputMethod").val()) {
       case "image":
         formData.append("textureType", "image")

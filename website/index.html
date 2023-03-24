@@ -55,10 +55,25 @@
                 <h5>Available Texture</h5>
               </div>
               <div class="col-12 upload">
+                <h5>Upload new texture</h5>
+                <!-- Create a bootstrap select element -->
                 <div class="form-group mt-3">
-                  <label for="uploadTexture">Upload a new texture</label>
+                  <label for="selectTextureInputMethod">Select the texture type</label>
+                  <select id="selectTextureInputMethod" class="form-select" aria-label="Default select example">
+                    <option selected value="default">Select</option>
+                    <option value="image">Image</option>
+                    <option value="color">Color</option>
+                  </select>
+                </div>
+                <div class="form-group mt-3 d-none" id="textureInputMethodImage">
+                  <label for="uploadTexture">Select the image</label>
                   <input type="file" class="form-control" id="uploadTexture" />
                 </div>
+                <div class="form-group mt-3 d-none" id="textureInputMethodColor">
+                  <label for="uploadTexture">Select the color</label>
+                  <input type="color" class="form-control" id="uploadTexture" />
+                </div>
+                <button class="btn btn-primary d-none mt-3">Upload</button>
               </div>
             </div>
             <div class="row mt-4 delete-model">
@@ -114,6 +129,7 @@
     <!-- JS loading -->
     <script src="assets/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     <script src="assets/jquery/3.6.4/jquery-3.6.4.min.js"></script>
+    <script src="assets/js/inputValidation.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/index.js"></script>
   </body>
