@@ -4,6 +4,25 @@ from modules.settings import *
 from modules.db.connection import *
 from modules.db.models import *
 
+
+def getCameraInfoInDictionary(cameraInfoSQL):
+    if not isinstance(cameraInfoSQL, list) or len(cameraInfoSQL) != NUMBER_OF_ELEMENTS_IN_MODEL_TABLE:
+        raise SystemException("The camera info SQL is not a list or does not have the right length")
+    return {
+            'ambientLightInScene': cameraInfoSQL[2],
+            'backgroundColor': cameraInfoSQL[3],
+            'cameraPositionX': cameraInfoSQL[4],
+            'cameraPositionY': cameraInfoSQL[5],
+            'cameraPositionZ': cameraInfoSQL[6],
+            'cameraRotationX': cameraInfoSQL[7],
+            'cameraRotationY': cameraInfoSQL[8],
+            'cameraRotationZ': cameraInfoSQL[9],
+            'cameraZoom': cameraInfoSQL[10],
+            'groundColor': cameraInfoSQL[11],
+            'groundVisibility': cameraInfoSQL[12],
+            'shadows': cameraInfoSQL[13]
+        }
+
 ## Data validation functions ##
 def generateModelID():
     generatedID = uniqueID()
@@ -44,7 +63,7 @@ def modelNameExists(modelName):
 def getModelsList():
     try:
         con, cur = connect()
-        res = cur.execute("SELECT IDModel, nameModel FROM model")
+        res = cur.execute("SELECT * FROM model")
         modelList = res.fetchall()
         closeConnection(con)
         return modelList
@@ -111,7 +130,8 @@ def createModel(modelID, modelName, cameraInfo, modelExtension):
             :groundVisibility,
             :backgroundColorHex,
             :ambientLightInScene,
-            :shadows
+            :shadows,
+            :modelExtension
             )
         """, {
             "IDModel": modelID,
@@ -127,7 +147,8 @@ def createModel(modelID, modelName, cameraInfo, modelExtension):
             "groundVisibility": cameraInfo["groundVisibility"],
             "backgroundColorHex": cameraInfo["backgroundColor"],
             "ambientLightInScene": cameraInfo["ambientLightInScene"],
-            "shadows": cameraInfo["shadows"]
+            "shadows": cameraInfo["shadows"],
+            "modelExtension": modelExtension
         })
         con.commit()
         closeConnection(con)

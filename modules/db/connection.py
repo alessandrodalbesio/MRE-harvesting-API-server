@@ -21,7 +21,8 @@ def connect():
             'groundVisibility' BOOLEAN NOT NULL,
             'backgroundColorHex' CHAR(7) NOT NULL,
             'ambientLightInScene' BOOLEAN NOT NULL,
-            'shadows' BOOLEAN NOT NULL
+            'shadows' BOOLEAN NOT NULL,
+            'extension' VARCHAR(4) NOT NULL
         )""")
         cur.execute(f"""CREATE TABLE IF NOT EXISTS 'texture' (
             'IDTexture' CHAR({TEXTURE_ID_LENGTH}) PRIMARY KEY, 

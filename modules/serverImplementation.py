@@ -23,9 +23,12 @@ def getModelsList():
                     'textureExtension': texture['extension'],
                 }
                 break
+        cameraInfo = dbModels.getCameraInfoInDictionary(model[2:14])
         returnList.append({
             'IDModel': model[0],
             'modelName': model[1],
+            'cameraInformations': cameraInfo,
+            'modelExtension': model[14],
             'defaultTexture': defaultTexture,
             'textures': textureList
         })
@@ -34,9 +37,11 @@ def getModelsList():
 def getModelInfoByID(IDModel):
     modelInfo = dbModels.getModelInfo(IDModel)
     texturesList = dbTextures.getTexturesList(IDModel)
+    cameraInfo = dbModels.getCameraInfoInDictionary(modelInfo[2:14])
     return {
         'IDModel': modelInfo[0],
         'modelName': modelInfo[1],
+        'cameraInfo': cameraInfo,
         'textures': texturesList
     }
 
@@ -104,33 +109,33 @@ def fileSize(file):
     return 10
 
 # MODEL CREATION #
-def createModel(modelName, modelOBJ, previewInfo):
+def createModel(modelName, model, previewInfo):
     try:
         if not arePreviewInfoValid(previewInfo):
             raise InputException("Invalid preview informations", previewInfo)
-        if modelOBJ.filename == '':
+        if model.filename == '':
             raise InputException("No model file")
-        if modelOBJ.filename.split('.')[-1] not in VALID_MODEL_EXTENSIONS:
-            raise InputException("Invalid model file", modelOBJ.filename.split('.')[-1])
+        if model.filename.split('.')[-1] not in VALID_MODEL_EXTENSIONS:
+            raise InputException("Invalid model file", model.filename.split('.')[-1])
         if dbModels.modelNameExists(modelName):
             raise InputException("Model name already exists", modelName)
         if len(modelName) == 0 or len(modelName) > MODEL_NAME_MAX_LENTGH:
             raise InputException("Invalid model name", len(modelName))
-        if fileSize(modelOBJ) > MAX_MODEL_SIZE:
-            raise InputException("Model file too big", fileSize(modelOBJ))
-        if fileSize(modelOBJ) == 0:
-            raise InputException("Model file is empty", fileSize(modelOBJ))
+        if fileSize(model) > MAX_MODEL_SIZE:
+            raise InputException("Model file too big", fileSize(model))
+        if fileSize(model) == 0:
+            raise InputException("Model file is empty", fileSize(model))
 
         # Manage the model creation
         modelID = dbModels.generateModelID()
-        modelExtension = modelOBJ.filename.split('.')[-1]
+        modelExtension = model.filename.split('.')[-1]
         # If it doesn't exist, create the models folder
         if not os.path.exists(os.path.join(MODELS_FOLDER)):
             os.mkdir(MODELS_FOLDER)
         # Create the model folder
         os.mkdir(os.path.join(MODELS_FOLDER, modelID))
         # Save the model file
-        modelOBJ.save(os.path.join(MODELS_FOLDER, modelID, MODEL_FILE_NAME+'.'+modelExtension))
+        model.save(os.path.join(MODELS_FOLDER, modelID, MODEL_FILE_NAME+'.'+modelExtension))
         # Save the model into the database
         dbModels.createModel(modelID, modelName, previewInfo, modelExtension)
     except InputException:
