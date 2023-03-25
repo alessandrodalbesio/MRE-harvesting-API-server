@@ -111,6 +111,8 @@ def fileSize(file):
 # MODEL CREATION #
 def createModel(modelName, model, previewInfo):
     try:
+        if not os.path.exists(MODELS_FOLDER):
+            os.mkdir(MODELS_FOLDER)
         if not arePreviewInfoValid(previewInfo):
             raise InputException("Invalid preview informations", previewInfo)
         if model.filename == '':
