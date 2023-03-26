@@ -1,3 +1,15 @@
+/* Search bar style */
+#searchBar input {
+  width: 100%;
+  padding: 5px;
+  padding-left: 10px;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #c3c3c3;
+  border-radius: 10px;
+}
+
+
 /* Body style */
 .content .card {
   -webkit-box-shadow: 0px 0px 40px rgb(29 58 83 / 10%) !important;
@@ -18,23 +30,6 @@
   text-align: center;
   margin: auto;
   padding: 15px 0;
-}
-
-.content .search-bar > input {
-  width: 100%;
-  padding: 10px;
-  border-radius: 0.5rem;
-}
-
-/* Search bar style */
-.search-bar input {
-  width: 100%;
-  padding: 5px;
-  padding-left: 10px;
-  border-style: solid;
-  border-width: 2px;
-  border-color: #c3c3c3;
-  border-radius: 10px;
 }
 
 /* Models */
@@ -192,7 +187,19 @@
   transition: transform 0.3s;
 }
 
-.texture:hover:not(.active) > i {
+.texture > i:hover {
+  transform: scale(1.1, 1.1);
+}
+
+
+
+.texture > .selectDefaultTexture, .texture > .defaultTextureIcon, .texture > .deleteTextureIcon {
+  display: none;
+}
+.texture > .selectDefaultTexture:hover, .texture > .deleteTextureIcon:hover {
+  transform: scale(1.1, 1.1);
+}
+.texture:hover:not(.active, .defaultTexture) > .deleteTextureIcon {
   display: block;
   position: absolute;
   top: 5px;
@@ -202,7 +209,23 @@
   padding: 7px;
   border-radius: 5px;
 }
-
-.texture > i:hover {
-  transform: scale(1.1, 1.1);
+.texture.active > img {
+  border-style: solid;
+  border-width: 4px;
+  border-color: red;
+}
+.texture:not(.active).defaultTexture > img {
+  border-style: solid;
+  border-width: 2px;
+  border-color: yellow;
+}
+.texture:hover:not(.defaultTexture) > .selectDefaultTexture {
+  display: block;
+  position: absolute;
+  top: 5px;
+  left: 18px;
+  font-size: 25px;
+  background-color: white;
+  padding: 7px;
+  border-radius: 5px;
 }

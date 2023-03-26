@@ -1,4 +1,4 @@
-import modelPreviewManager from "modelPreview";
+import { modelPreviewManager, modelPreviewManagerTextureUpload } from "modelPreview";
 
 /* Page parameters definition */
 const MAX_MODEL_FILE_SIZE = 10000000; // 10MB
