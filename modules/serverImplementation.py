@@ -78,10 +78,29 @@ def deleteTexture(IDTexture):
         dbTextures.deleteTexture(IDTexture)
         os.remove(os.path.join(MODELS_FOLDER, textureInfo['IDModel'], textureInfo['IDTexture'] + '.' + textureInfo['extension']))
         os.remove(os.path.join(MODELS_FOLDER, textureInfo['IDModel'], textureInfo['IDTexture'] + '-'+MODEL_TEXTURE_PREVIEW_NAME+'.' + MODEL_TEXTURE_PREVIEW_FORMAT))
+    except InputException:
+        raise
     except SystemException:
         raise
     except:
         raise SystemException("Something went wrong during the deletion of the texture", traceback.format_exc())
+
+def setDefaultTexture(IDModel, IDTexture):
+    try:
+        # Input check
+        if not dbModels.modelIDExists(IDModel):
+            raise InputException("Model ID doesn't exists", IDModel)
+        if not dbTextures.textureIDExists(IDTexture):
+            raise InputException("Texture ID doesn't exists", IDTexture)
+        if not dbTextures.isTextureFromModel(IDTexture, IDModel):
+            raise InputException("Texture ID doesn't exists for this model", IDTexture)
+        dbTextures.changeDefaultTexture(IDModel, IDTexture)
+    except InputException:
+        raise
+    except SystemException:
+        raise
+    except:
+        raise SystemException("Something went wrong during the default texture change", traceback.format_exc())
 
 ## Data creation ##
 
@@ -192,6 +211,8 @@ def createTextureByColor(modelID, color, texturePreview, isNewModel = False):
         # Create the texture image and save it on the server (used only for the texture selection)
         im = Image.new(mode="RGB", size=(TEXTURE_COLOR_IMG_SIZE, TEXTURE_COLOR_IMG_SIZE), color=convertHexColorToRGB(color))
         im.save(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+TEXTURE_COLOR_IMG_FORMAT))
+        # Get the data about the texture
+        return dbTextures.getTextureInfo(textureID)
     except InputException:
         rollback()
         raise
@@ -201,8 +222,6 @@ def createTextureByColor(modelID, color, texturePreview, isNewModel = False):
     except Exception:
         rollback()
         raise SystemException('Something went wrong while creating the texture', tracebackError=traceback.format_exc())
-    else:
-        return textureID
 
 
 def createTextureByImage(modelID, IMG, texturePreview, isNewModel = False):
@@ -251,6 +270,8 @@ def createTextureByImage(modelID, IMG, texturePreview, isNewModel = False):
         dbTextures.createTexture(textureID, modelID, extension, isNewModel=isNewModel, isColor=False, isImage = True)
         # Save the texture on the server
         IMG.save(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+extension))
+        # Get the data about the texture
+        return dbTextures.getTextureInfo(textureID)
     except InputException:
         rollback()
         raise

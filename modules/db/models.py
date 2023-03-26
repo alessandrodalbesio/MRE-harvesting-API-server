@@ -6,21 +6,21 @@ from modules.db.models import *
 
 
 def getCameraInfoInDictionary(cameraInfoSQL):
-    if not isinstance(cameraInfoSQL, list) or len(cameraInfoSQL) != NUMBER_OF_ELEMENTS_IN_MODEL_TABLE:
-        raise SystemException("The camera info SQL is not a list or does not have the right length")
+    if not isinstance(cameraInfoSQL, tuple) and len(cameraInfoSQL) != 12:
+        raise InputException("The camera info SQL is not valid")
     return {
-            'ambientLightInScene': cameraInfoSQL[2],
-            'backgroundColor': cameraInfoSQL[3],
-            'cameraPositionX': cameraInfoSQL[4],
-            'cameraPositionY': cameraInfoSQL[5],
-            'cameraPositionZ': cameraInfoSQL[6],
-            'cameraRotationX': cameraInfoSQL[7],
-            'cameraRotationY': cameraInfoSQL[8],
-            'cameraRotationZ': cameraInfoSQL[9],
-            'cameraZoom': cameraInfoSQL[10],
-            'groundColor': cameraInfoSQL[11],
-            'groundVisibility': cameraInfoSQL[12],
-            'shadows': cameraInfoSQL[13]
+            'ambientLightInScene': cameraInfoSQL[10],
+            'backgroundColor': cameraInfoSQL[9],
+            'cameraPositionX': cameraInfoSQL[0],
+            'cameraPositionY': cameraInfoSQL[1],
+            'cameraPositionZ': cameraInfoSQL[2],
+            'cameraRotationX': cameraInfoSQL[3],
+            'cameraRotationY': cameraInfoSQL[4],
+            'cameraRotationZ': cameraInfoSQL[5],
+            'cameraZoom': cameraInfoSQL[6],
+            'groundColor': cameraInfoSQL[7],
+            'groundVisibility': cameraInfoSQL[8],
+            'shadows': cameraInfoSQL[11]
         }
 
 ## Data validation functions ##
@@ -183,6 +183,31 @@ def updateModel(IDModel, newName):
         raise SystemException("Something went wrong during the update of the model", traceback.format_exc())
     
     saveInfoLog(f"Model {IDModel} has been updated with the name {newName}")
+
+def updateModelName(modelID, newNameModel):
+    # Validate input
+    if not isModelIDValid(modelID):
+        raise InputException("Model ID is not valid")
+    if not isModelNameValid(newNameModel):
+        raise InputException("Model name is not valid")
+    if not modelIDExists(modelID):
+        raise InputException("Model ID does not exist")
+    if modelNameExists(newNameModel):
+        raise InputException("Model name already exists")
+
+    # Update model
+    try:
+        con, cur = connect()
+        cur.execute(f"""UPDATE model SET nameModel = :newNameModel WHERE IDModel = :modelID""", {
+            "newNameModel": newNameModel,
+            "modelID": modelID
+        })
+        con.commit()
+        closeConnection(con)
+    except sqlite3.Error:
+        raise SystemException("Something went wrong during the update of the model", traceback.format_exc())
+    
+    saveInfoLog(f"Model {modelID} has been updated with the name {newNameModel}")
 
 ## Delete functions ##
 def deleteModel(modelID):

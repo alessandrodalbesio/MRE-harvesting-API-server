@@ -9,7 +9,7 @@ from modules.serverImplementation import *
 from modules.settings import *
 
 
-app = Flask(__name__)
+app = Flask(__name__, static_folder="website", static_url_path="")
 if USE_CORS:
     CORS(app)
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_UPLOAD_SIZE
@@ -103,8 +103,8 @@ def handleTextureDelete(textureID):
 @errorHandler()
 def handleColorTexture():
     if 'modelID' in request.form and 'textureColor' in request.form and 'modelWithTexturePreview' in request.files:
-        createTextureByColor(request.form['modelID'], request.form['textureColor'], request.files['modelWithTexturePreview'], False)
-        return 'Texture created successfully', 200
+        textureInfo = createTextureByColor(request.form['modelID'], request.form['textureColor'], request.files['modelWithTexturePreview'], False)
+        return json.dumps(textureInfo), 200
     else:
         if 'modelID' not in request.form:
             raise InputException('No model ID')
@@ -117,8 +117,8 @@ def handleColorTexture():
 @errorHandler()
 def handleImageTexture():
     if 'modelID' in request.form and 'textureImage' in request.files and 'modelWithTexturePreview' in request.files:
-        createTextureByImage(request.form['modelID'], request.files['textureImage'], request.files['modelWithTexturePreview'], False)
-        return 'Texture created successfully', 200
+        textureInfo = createTextureByImage(request.form['modelID'], request.files['textureImage'], request.files['modelWithTexturePreview'], False)
+        return json.dumps(textureInfo), 200
     else:
         if 'modelID' not in request.form:
             raise InputException('No model ID')
@@ -127,6 +127,14 @@ def handleImageTexture():
         if 'modelWithTexturePreview' not in request.files:
             raise InputException('No texture preview')
 
+@app.put('/texture/default/<modelID>')
+@errorHandler()
+def handleDefaultTexture(modelID):
+    if 'textureID' in request.form:
+        setDefaultTexture(modelID, request.form['textureID'])
+        return 'Default texture set successfully', 200
+    else:
+        raise InputException('No texture ID')
 
 ##### UNITY MANAGEMENT #####
 # TO IMPLEMENT #

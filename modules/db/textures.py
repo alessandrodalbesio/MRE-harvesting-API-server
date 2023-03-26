@@ -70,22 +70,22 @@ def getTextureInfo(IDTexture):
         res = cur.execute("SELECT * FROM texture WHERE IDTexture = :IDTexture", {"IDTexture": IDTexture})
         textureInfo = res.fetchone()
         closeConnection(con)
-        textureInfo = getTextureInformationFromDatabase(textureInfo)
+        return getTextureInformationFromDatabase(textureInfo)
     except sqlite3.Error:
         raise SystemException("Something went wrong during the retrieval of the texture info", traceback.format_exc())
 
-def isTextureFromModel(newDefaultTexture, modelID):
+def isTextureFromModel(texture, modelID):
     try:
-        if not isTextureIDValid(newDefaultTexture):
+        if not isTextureIDValid(texture):
             raise InputException("Invalid texture ID")
         if not isModelIDValid(modelID):
             raise InputException("Invalid model ID")
-        if not textureIDExists(newDefaultTexture):
+        if not textureIDExists(texture):
             raise InputException("Texture ID does not exist")
         if not modelIDExists(modelID):
             raise InputException("Model ID does not exist")
         con, cur = connect()
-        res = cur.execute("SELECT IDTexture FROM texture WHERE IDModel = :IDModel AND IDTexture = :IDTexture", {"IDModel": modelID, "IDTexture": newDefaultTexture})
+        res = cur.execute("SELECT IDTexture FROM texture WHERE IDModel = :IDModel AND IDTexture = :IDTexture", {"IDModel": modelID, "IDTexture": texture})
         numElement = len(res.fetchall())
         closeConnection(con)
         return numElement > 0
