@@ -20,7 +20,15 @@ app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_UPLOAD_SIZE
 @app.get('/models')
 @errorHandler()
 def getModelListHandler():
-    return json.dumps(getModelsList()), 200
+    modelList = getModelsList()
+    if request.args.get('device') == 'unity':
+        # Remove cameraInformations from all the models
+        for i in range(len(modelList)):
+            del modelList[i]["cameraInformations"]
+            del modelList[i]["defaultTexture"]
+        return json.dumps(modelList), 200
+    else:
+        return json.dumps(modelList), 200
 
 @app.get('/model/modelID/<modelID>')
 @errorHandler()
