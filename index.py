@@ -1,6 +1,5 @@
 # Import all the needed global modules
 from flask import Flask, request
-from flask_cors import CORS
 import json
 
 # Import all the needed local modules
@@ -10,8 +9,6 @@ from modules.settings import *
 
 
 app = Flask(__name__, static_folder="website", static_url_path="")
-if USE_CORS:
-    CORS(app)
 app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_UPLOAD_SIZE
 
 ##### MODELS MANAGEMENT #####
