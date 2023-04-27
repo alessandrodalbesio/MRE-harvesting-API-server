@@ -8,8 +8,8 @@ from modules.serverImplementation import *
 from modules.settings import *
 
 
-app = Flask(__name__, static_folder="website", static_url_path="")
-app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_UPLOAD_SIZE
+app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 1000000000
 
 ##### MODELS MANAGEMENT #####
 
@@ -35,7 +35,7 @@ def getModelInfoByIDHandler(modelID):
 @app.get('/model/modelNameTaken/<modelName>')
 @errorHandler()
 def isModelNameTakenHandler(modelName):
-    return modelNameAlreadyUsed(modelName), 200
+    return json.dumps({'modelNameAlreadyUsed': modelNameAlreadyUsed(modelName)}), 200
 
 @app.get('/model/modelName/<modelName>')
 @errorHandler()
@@ -141,6 +141,22 @@ def handleDefaultTexture(modelID):
     else:
         raise InputException('No texture ID')
 
+@app.get('/settings')
+@errorHandler()
+def settingsHandler():
+    return json.dumps({
+        'modelIDLength': MODEL_ID_LENGTH,
+        'textureIDLength': TEXTURE_ID_LENGTH,
+        'maxModelNameLength': MODEL_NAME_MAX_LENGTH,
+        'validModelExtensions': VALID_MODEL_EXTENSIONS,
+        'validTextureExtensions': VALID_TEXTURE_EXTENSIONS,
+        'modelFileName': MODEL_FILE_NAME,
+        'modelTexturePreviewName': MODEL_TEXTURE_PREVIEW_NAME,
+        'modelTexturePreviewFormat': MODEL_TEXTURE_PREVIEW_FORMAT,
+        'maxModelFileSize': MAX_MODEL_SIZE,
+        'maxTextureFileSize': MAX_IMG_SIZE,
+    }), 200
+
 ##### UNITY MANAGEMENT #####
 # TO IMPLEMENT #
 
@@ -149,4 +165,4 @@ def handleDefaultTexture(modelID):
 
 # Run the app when the program starts!
 if __name__ == '__main__':
-    app.run(debug=DEBUG_ACTIVE, use_reloader=USE_RELOADER, host=HOST, port=PORT)
+    app.run()
