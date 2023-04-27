@@ -31,7 +31,7 @@ def generateModelID():
     return generatedID
 
 def isModelIDValid(modelID):
-    return isinstance(modelID, str) and len(modelID) == MODEL_ID_LENGTH
+    return isinstance(modelID, str) and len(modelID) == MODEL_ID_LENTGH
 
 def modelIDExists(modelID):
     try:
@@ -45,7 +45,7 @@ def modelIDExists(modelID):
         raise SystemException("Something went wrong during the validation of the model ID", traceback.format_exc())
 
 def isModelNameValid(modelName):
-    return isinstance(modelName, str) and 0 < len(modelName) <= MODEL_NAME_MAX_LENGTH
+    return isinstance(modelName, str) and 0 < len(modelName) <= MODEL_NAME_MAX_LENTGH
 
 def modelNameExists(modelName):
     try:

@@ -140,7 +140,7 @@ def createModel(modelName, model, previewInfo):
             raise InputException("Invalid model file", model.filename.split('.')[-1])
         if dbModels.modelNameExists(modelName):
             raise InputException("Model name already exists", modelName)
-        if len(modelName) == 0 or len(modelName) > MODEL_NAME_MAX_LENGTH:
+        if len(modelName) == 0 or len(modelName) > MODEL_NAME_MAX_LENTGH:
             raise InputException("Invalid model name", len(modelName))
         if fileSize(model) > MAX_MODEL_SIZE:
             raise InputException("Model file too big", fileSize(model))

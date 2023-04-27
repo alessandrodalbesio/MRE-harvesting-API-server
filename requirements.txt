@@ -1,3 +1,2 @@
-Flask==2.2 # Flask
-gunicorn==20.1 # For server development
-Pillow==9.4 # For images generation
+Flask==2.2.3
+Pillow==9.4.0

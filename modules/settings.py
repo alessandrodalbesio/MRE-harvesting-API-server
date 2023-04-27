@@ -1,13 +1,18 @@
 import os
 
 # APP settings
-MODELS_FOLDER = '/var/www/models'
+HOST = 'localhost'
+PORT = 5000
+DEBUG_ACTIVE = True
+USE_RELOADER = True | DEBUG_ACTIVE # If the app is in debug mode, the reloader is automatically activated
+USE_CORS = True
+MODELS_FOLDER = './website/models/'
 
 # Database settings
 DB_NAME = 'database.db'
-MODEL_ID_LENGTH = 32
+MODEL_ID_LENTGH = 32
 TEXTURE_ID_LENGTH = 32
-MODEL_NAME_MAX_LENGTH = 100
+MODEL_NAME_MAX_LENTGH = 100
 NUMBER_OF_ELEMENTS_IN_MODEL_TABLE = 14
 
 # Static files settings

@@ -8,8 +8,8 @@ def connect():
         con = sqlite3.connect(DB_NAME)
         cur = con.cursor()
         cur.execute(f"""CREATE TABLE IF NOT EXISTS 'model' (
-            'IDModel' CHAR({MODEL_ID_LENGTH}) NOT NULL PRIMARY KEY,
-            'nameModel' VARCHAR({MODEL_NAME_MAX_LENGTH}) NOT NULL UNIQUE,
+            'IDModel' CHAR({MODEL_ID_LENTGH}) NOT NULL PRIMARY KEY,
+            'nameModel' VARCHAR({MODEL_NAME_MAX_LENTGH}) NOT NULL UNIQUE,
             'cameraPositionX' FLOAT NOT NULL,
             'cameraPositionY' FLOAT NOT NULL,
             'cameraPositionZ' FLOAT NOT NULL,
@@ -26,7 +26,7 @@ def connect():
         )""")
         cur.execute(f"""CREATE TABLE IF NOT EXISTS 'texture' (
             'IDTexture' CHAR({TEXTURE_ID_LENGTH}) PRIMARY KEY, 
-            'IDModel' CHAR({MODEL_ID_LENGTH}) NOT NULL,
+            'IDModel' CHAR({MODEL_ID_LENTGH}) NOT NULL,
             'isDefault' BOOLEAN NOT NULL DEFAULT 0,
             'isColor' BOOLEAN NOT NULL DEFAULT 0,
             'colorHex' CHAR(7) DEFAULT NULL,
