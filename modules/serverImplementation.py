@@ -1,6 +1,7 @@
 # Import all the needed global modules
 import os, shutil, traceback
 from PIL import Image 
+from flask import Flask, request
 
 # Import all the needed local modules
 import modules.db.models as dbModels
@@ -37,11 +38,20 @@ def getModelsList():
 def getModelInfoByID(IDModel):
     modelInfo = dbModels.getModelInfo(IDModel)
     texturesList = dbTextures.getTexturesList(IDModel)
+    for texture in texturesList:
+        if texture['isDefault'] == 1:
+            defaultTexture = {
+                'textureID': texture['IDTexture'],
+                'textureExtension': texture['extension'],
+            }
+            break
     cameraInfo = dbModels.getCameraInfoInDictionary(modelInfo[2:14])
     return {
         'IDModel': modelInfo[0],
         'modelName': modelInfo[1],
-        'cameraInfo': cameraInfo,
+        'cameraInformations': cameraInfo,
+        'modelExtension': modelInfo[14],
+        'defaultTexture': defaultTexture,
         'textures': texturesList
     }
 
@@ -140,7 +150,7 @@ def createModel(modelName, model, previewInfo):
             raise InputException("Invalid model file", model.filename.split('.')[-1])
         if dbModels.modelNameExists(modelName):
             raise InputException("Model name already exists", modelName)
-        if len(modelName) == 0 or len(modelName) > MODEL_NAME_MAX_LENTGH:
+        if len(modelName) == 0 or len(modelName) > MODEL_NAME_MAX_LENGTH:
             raise InputException("Invalid model name", len(modelName))
         if fileSize(model) > MAX_MODEL_SIZE:
             raise InputException("Model file too big", fileSize(model))
@@ -211,6 +221,7 @@ def createTextureByColor(modelID, color, texturePreview, isNewModel = False):
         # Create the texture image and save it on the server (used only for the texture selection)
         im = Image.new(mode="RGB", size=(TEXTURE_COLOR_IMG_SIZE, TEXTURE_COLOR_IMG_SIZE), color=convertHexColorToRGB(color))
         im.save(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+TEXTURE_COLOR_IMG_FORMAT))
+    
         # Get the data about the texture
         return dbTextures.getTextureInfo(textureID)
     except InputException:
@@ -270,6 +281,7 @@ def createTextureByImage(modelID, IMG, texturePreview, isNewModel = False):
         dbTextures.createTexture(textureID, modelID, extension, isNewModel=isNewModel, isColor=False, isImage = True)
         # Save the texture on the server
         IMG.save(os.path.join(MODELS_FOLDER, modelID, textureID+'.'+extension))
+
         # Get the data about the texture
         return dbTextures.getTextureInfo(textureID)
     except InputException:
@@ -281,5 +293,3 @@ def createTextureByImage(modelID, IMG, texturePreview, isNewModel = False):
     except Exception:
         rollback()
         raise SystemException('Something went wrong while creating the texture', tracebackError=traceback.format_exc())
-    else:
-        return textureID

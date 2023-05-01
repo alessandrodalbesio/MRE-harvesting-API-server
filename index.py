@@ -8,8 +8,8 @@ from modules.serverImplementation import *
 from modules.settings import *
 
 
-app = Flask(__name__, static_folder="website", static_url_path="")
-app.config['MAX_CONTENT_LENGTH'] = MAX_FILE_UPLOAD_SIZE
+app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 1000000000
 
 ##### MODELS MANAGEMENT #####
 
@@ -30,12 +30,12 @@ def getModelListHandler():
 @app.get('/model/modelID/<modelID>')
 @errorHandler()
 def getModelInfoByIDHandler(modelID):
-    return json.dump(getModelInfoByID(modelID)), 200
+    return json.dumps(getModelInfoByID(modelID)), 200
 
 @app.get('/model/modelNameTaken/<modelName>')
 @errorHandler()
 def isModelNameTakenHandler(modelName):
-    return modelNameAlreadyUsed(modelName), 200
+    return json.dumps({'modelNameAlreadyUsed': modelNameAlreadyUsed(modelName)}), 200
 
 @app.get('/model/modelName/<modelName>')
 @errorHandler()
@@ -141,12 +141,11 @@ def handleDefaultTexture(modelID):
     else:
         raise InputException('No texture ID')
 
-##### UNITY MANAGEMENT #####
-# TO IMPLEMENT #
-
-##### OBJECT TRACKING #####
-# TO IMPLEMENT #
+@app.get('/settings')
+@errorHandler()
+def settingsHandler():
+    return json.dumps(SETTINGS_ALL), 200
 
 # Run the app when the program starts!
 if __name__ == '__main__':
-    app.run(debug=DEBUG_ACTIVE, use_reloader=USE_RELOADER, host=HOST, port=PORT)
+    app.run()
