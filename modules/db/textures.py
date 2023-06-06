@@ -1,5 +1,5 @@
 import sqlite3, traceback
-from modules.errors import *
+from modules.logging import *
 from modules.settings import *
 from modules.db.connection import *
 from modules.db.models import *

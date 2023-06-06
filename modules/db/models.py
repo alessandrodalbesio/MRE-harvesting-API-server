@@ -1,26 +1,22 @@
 import sqlite3, traceback
-from modules.errors import *
+from modules.logging import *
 from modules.settings import *
 from modules.db.connection import *
 from modules.db.models import *
 
 
 def getCameraInfoInDictionary(cameraInfoSQL):
-    if not isinstance(cameraInfoSQL, tuple) and len(cameraInfoSQL) != 12:
+    if not isinstance(cameraInfoSQL, tuple) and len(cameraInfoSQL) != 8:
         raise InputException("The camera info SQL is not valid")
     return {
-            'ambientLightInScene': cameraInfoSQL[10],
-            'backgroundColor': cameraInfoSQL[9],
+            'backgroundColor': cameraInfoSQL[7],
             'cameraPositionX': cameraInfoSQL[0],
             'cameraPositionY': cameraInfoSQL[1],
             'cameraPositionZ': cameraInfoSQL[2],
             'cameraRotationX': cameraInfoSQL[3],
             'cameraRotationY': cameraInfoSQL[4],
             'cameraRotationZ': cameraInfoSQL[5],
-            'cameraZoom': cameraInfoSQL[6],
-            'groundColor': cameraInfoSQL[7],
-            'groundVisibility': cameraInfoSQL[8],
-            'shadows': cameraInfoSQL[11]
+            'cameraZoom': cameraInfoSQL[6]
         }
 
 ## Data validation functions ##
@@ -126,11 +122,7 @@ def createModel(modelID, modelName, cameraInfo, modelExtension):
             :cameraRotationY,
             :cameraRotationZ,
             :cameraZoom,
-            :groundColorHex,
-            :groundVisibility,
             :backgroundColorHex,
-            :ambientLightInScene,
-            :shadows,
             :modelExtension
             )
         """, {
@@ -143,11 +135,7 @@ def createModel(modelID, modelName, cameraInfo, modelExtension):
             "cameraRotationY": cameraInfo["cameraRotationY"],
             "cameraRotationZ": cameraInfo["cameraRotationZ"],
             "cameraZoom": cameraInfo["cameraZoom"],
-            "groundColorHex": cameraInfo["groundColor"],
-            "groundVisibility": cameraInfo["groundVisibility"],
             "backgroundColorHex": cameraInfo["backgroundColor"],
-            "ambientLightInScene": cameraInfo["ambientLightInScene"],
-            "shadows": cameraInfo["shadows"],
             "modelExtension": modelExtension
         })
         con.commit()

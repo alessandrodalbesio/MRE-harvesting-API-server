@@ -1,13 +1,12 @@
 # Import all the needed global modules
 import os, shutil, traceback
 from PIL import Image 
-from flask import Flask, request
 
 # Import all the needed local modules
 import modules.db.models as dbModels
 import modules.db.textures as dbTextures
 from modules.settings import *
-from modules.errors import *
+from modules.logging import *
 from modules.colors import *
 
 
@@ -24,12 +23,12 @@ def getModelsList():
                     'textureExtension': texture['extension'],
                 }
                 break
-        cameraInfo = dbModels.getCameraInfoInDictionary(model[2:14])
+        cameraInfo = dbModels.getCameraInfoInDictionary(model[2:-1])
         returnList.append({
             'IDModel': model[0],
             'modelName': model[1],
             'cameraInformations': cameraInfo,
-            'modelExtension': model[14],
+            'modelExtension': model[-1],
             'defaultTexture': defaultTexture,
             'textures': textureList
         })
@@ -45,12 +44,12 @@ def getModelInfoByID(IDModel):
                 'textureExtension': texture['extension'],
             }
             break
-    cameraInfo = dbModels.getCameraInfoInDictionary(modelInfo[2:14])
+    cameraInfo = dbModels.getCameraInfoInDictionary(modelInfo[2:-1])
     return {
         'IDModel': modelInfo[0],
         'modelName': modelInfo[1],
         'cameraInformations': cameraInfo,
-        'modelExtension': modelInfo[14],
+        'modelExtension': modelInfo[-1],
         'defaultTexture': defaultTexture,
         'textures': texturesList
     }
@@ -116,7 +115,6 @@ def setDefaultTexture(IDModel, IDTexture):
 
 def arePreviewInfoValid(previewInfo):
     requiredIndex = [
-        'ambientLightInScene',
         'backgroundColor',
         'cameraPositionX',
         'cameraPositionY',
@@ -124,10 +122,7 @@ def arePreviewInfoValid(previewInfo):
         'cameraRotationX',
         'cameraRotationY',
         'cameraRotationZ',
-        'cameraZoom',  
-        'groundColor', 
-        'groundVisibility', 
-        'shadows'
+        'cameraZoom'
     ]
     for index in requiredIndex:
         if index not in previewInfo:
@@ -135,7 +130,10 @@ def arePreviewInfoValid(previewInfo):
     return True
 
 def fileSize(file):
-    return 10
+    file.seek(0, os.SEEK_END)
+    size = file.tell()
+    file.seek(0)
+    return size
 
 # MODEL CREATION #
 def createModel(modelName, model, previewInfo):
@@ -182,6 +180,7 @@ def createModel(modelName, model, previewInfo):
 
 # TEXTURE CREATION #
 def createTextureByColor(modelID, color, texturePreview, isNewModel = False):
+    # Used to delete the model if something goes wrong
     def rollback():
         saveInfoLog("START Rollback")
         if textureID != None:
@@ -236,6 +235,7 @@ def createTextureByColor(modelID, color, texturePreview, isNewModel = False):
 
 
 def createTextureByImage(modelID, IMG, texturePreview, isNewModel = False):
+    # Used to delete all the files created in case of error
     def rollback():
         if textureID != None and extension != None:
             saveInfoLog('START Rollback')

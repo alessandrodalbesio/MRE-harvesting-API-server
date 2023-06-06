@@ -3,46 +3,42 @@ from flask import Flask, request
 import json
 
 # Import all the needed local modules
-from modules.errors import *
+from modules.logging import *
 from modules.serverImplementation import *
 from modules.settings import *
 
-
 app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 1000000000
+
 
 ##### MODELS MANAGEMENT #####
 
-# Data retrieval #
+# Get a list of all models
 @app.get('/models')
 @errorHandler()
 def getModelListHandler():
-    modelList = getModelsList()
-    if request.args.get('device') == 'unity':
-        # Remove cameraInformations from all the models
-        for i in range(len(modelList)):
-            del modelList[i]["cameraInformations"]
-            del modelList[i]["defaultTexture"]
-        return json.dumps(modelList), 200
-    else:
-        return json.dumps(modelList), 200
+    return json.dumps(getModelsList()), 200
 
+# Get information about a specific model based on the model id
 @app.get('/model/modelID/<modelID>')
 @errorHandler()
 def getModelInfoByIDHandler(modelID):
     return json.dumps(getModelInfoByID(modelID)), 200
 
+# Verify if a model name is already used
 @app.get('/model/modelNameTaken/<modelName>')
 @errorHandler()
 def isModelNameTakenHandler(modelName):
     return json.dumps({'modelNameAlreadyUsed': modelNameAlreadyUsed(modelName)}), 200
 
+# Get information about a specific model based on the model name
 @app.get('/model/modelName/<modelName>')
 @errorHandler()
 def getModelInfoByNameHandler(modelName):
     return json.dumps(getModelInfoByName(modelName)), 200
 
 # Data creation #
+
+# Create a new model
 @app.post('/model')
 @errorHandler()
 def index():
@@ -78,6 +74,8 @@ def index():
             raise InputException('No camera photo')
 
 # Data update #
+
+# Update the name of the model with the modelID
 @app.put('/model/<modelID>')
 @errorHandler()
 def handleModelUpdate(modelID):
@@ -88,6 +86,8 @@ def handleModelUpdate(modelID):
         raise InputException('No model name')
 
 # Data cancellation #
+
+# Delete the model with the modelID
 @app.delete('/model/<modelID>')
 @errorHandler()
 def handleModelDelete(modelID):
@@ -98,12 +98,14 @@ def handleModelDelete(modelID):
 
 ##### TEXTURES MANAGEMENT #####
 
+# Delete a texture with a specific textureID
 @app.delete('/texture/<textureID>')
 @errorHandler()
 def handleTextureDelete(textureID):
     deleteTexture(textureID)
     return 'Texture deleted successfully', 200
 
+# Create a texture from a color definition
 @app.post('/texture/color')
 @errorHandler()
 def handleColorTexture():
@@ -118,6 +120,7 @@ def handleColorTexture():
         if 'modelWithTexturePreview' not in request.files:
             raise InputException('No texture preview')
 
+# Create a texture from an image
 @app.post('/texture/image')
 @errorHandler()
 def handleImageTexture():
@@ -132,6 +135,7 @@ def handleImageTexture():
         if 'modelWithTexturePreview' not in request.files:
             raise InputException('No texture preview')
 
+# Set the default texture of a model
 @app.put('/texture/default/<modelID>')
 @errorHandler()
 def handleDefaultTexture(modelID):
@@ -141,6 +145,9 @@ def handleDefaultTexture(modelID):
     else:
         raise InputException('No texture ID')
 
+
+##### SETTINGS MANAGEMENT #####
+# Get the list of all the settings of the server (needed from the clients to have consistency when they are updated)
 @app.get('/settings')
 @errorHandler()
 def settingsHandler():
@@ -148,4 +155,4 @@ def settingsHandler():
 
 # Run the app when the program starts!
 if __name__ == '__main__':
-    app.run()
+    app.run(host = HOST, port = PORT, debug = DEBUG)

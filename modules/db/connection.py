@@ -1,5 +1,5 @@
 import sqlite3, uuid, traceback
-from modules.errors import *
+from modules.logging import *
 from modules.settings import *
 
 ### Global functions definition ###
@@ -17,11 +17,7 @@ def connect():
             'cameraRotationY' FLOAT NOT NULL,
             'cameraRotationZ' FLOAT NOT NULL,
             'cameraZoom' FLOAT NOT NULL,
-            'groundColorHex' CHAR(7) NOT NULL,
-            'groundVisibility' BOOLEAN NOT NULL,
             'backgroundColorHex' CHAR(7) NOT NULL,
-            'ambientLightInScene' BOOLEAN NOT NULL,
-            'shadows' BOOLEAN NOT NULL,
             'extension' VARCHAR(4) NOT NULL
         )""")
         cur.execute(f"""CREATE TABLE IF NOT EXISTS 'texture' (
