@@ -1,114 +1,52 @@
-# Mixed Reality Server
+# Server
 ## Getting started
-This repository contains all the files needed to implement a mixed reality environment server with a Raspberry. <br>
-The server has the following task:
+This repository contains all the files needed to implement a server on a Raspberry Pi which can be used to manage all the files and texture needed in a virtual environment. <br><br>
+After the installation as soon as you will turn on the Raspberry it will: 
 - Act as an Access Point to create a private network
 - Act as a DNS Server
 - Act as an API Server
 - Act as a Websocket Server
-- Act as a proxy to serve the User Interface files
+- Act as a proxy to serve all the static files required
 
-All the devices connected with the Raspberry will be able to surf the internet if the device is connected with a Ethernet Cable.
-
-```mermaid
-flowchart LR
-    ethernet -.- publicnetwork
-    subgraph "Private Network"
-        userinterface(User Interface)
-        headset(Headset)
-        sensors(Sensors)
-        sensors --- wifi
-        userinterface --- wifi
-        headset --- wifi
-        wifi --- server
-        server --- ethernet
-        subgraph "Raspberry"
-            server(Server)
-            wifi[Wifi Interface]
-            ethernet[Ethernet Interface]
-        end
-    end
-    publicnetwork(((Public Network)))
-```
-## Development conditions
-The system has been developed in the following conditions:
-- Python 3.11
-- Raspberry Pi OS 32-bit with desktop kernel version 5.15 and Debian version 11
-- Raspberry Pi 3 B+
-
-## Hardware Requirements
-You will need:
-- A raspberry Pi 3 or 4
-- A micro SD
-- A Micro-SB card USB adapter
-- A Micro-USB cable with an adaptator
-- An Ethernet Cable
-- A keyboard
-- A mouse
-- A display with the HDMI input
-- An HDMI cable
+All the devices should be connected to the WiFi of the Raspberry. <br>
+To have access to internet you should connect the Raspberry with an ethernet connection (the WiFi is needed!). <br><br>
+A schema of the server is displayed below: <br>
+![Alt Text](readme/server-schema.png)
 
 ## Installation
-Flash into a microSD the Raspberry Pi OS with Desktop (Raspberry Pi Imager is strongly recomended for this task) and setup the device.<br>
-Don't use the WiFi to connect the device to the network but use the Ethernet cable. <br><br>
-When you have finished open a terminal and type the following commands:
-```bash
-sudo apt update
-sudo apt upgrade -y
-```
+Flash into a microSD the Raspberry Pi OS with Desktop (Raspberry Pi Imager is suggested for this task) and setup the device.<br>
+Don't use the WiFi to connect the device to the internet but use the Ethernet cable.
 ### Set up the Raspberry Hotspot
 To create an hotspot with Raspberry Pi please follow [this tutorial](https://www.tomshardware.com/how-to/raspberry-pi-access-point).<br>
-The name you will choose for the network and its password is not important even if it's highly recomended to use a strong password.<br>
+The name you will choose for the network and its password is not important for the installation even if it's highly recomended to use a strong password.<br>
 
-### Install all the needed files
-To install the server follow these steps:
+### Installation
+To install the server you should follow these steps:
 1. Open a new terminal
-2. Install Nginx
+2. Update and upgrade the system
 ```bash
-sudo apt-get install nginx
+apt-get upgrade
+apt-get update -y
 ```
-3. Install ufw
+3. Create a folder
 ```bash
-sudo apt-get install ufw
+mkdir /usr/local/server
 ```
-4. Close and re-open the terminal
-5. Allow the needed port for Nginx and SSH. <br>
-    These commands will open the Raspberry Pi ports 80 and 22 only for the devices that are connected to the Hotspot (this is a security choice). <br>
+3. Clone the repository
 ```bash
-sudo ufw allow 'Nginx HTTP'
-sudo ufw allow ssh
-``` 
-6. Activate the firewall
-```bash
-sudo ufw activate
+git clone https://gitlab.epfl.ch/create-lab/sensing-with-vr/server.git /usr/local/server
 ```
-6. Create a new folder for the APIs in the <code>/var/www</code> folder
+4. Modify the parameters in <code>modules/settings.py</code> and <code>install.sh</code> to make the server compatible with your needs. A brief description of the parameters is provided in the files.
+5. Run the installation scripts
 ```bash
-mk dir /var/www/API
+sudo bash /usr/local/server/install.sh
 ```
-7. Clone the repository
-```bash
-git clone https://gitlab.epfl.ch/create-lab/sensing-with-vr/server.git /var/www/API
-```
-8. Modify the file <code>/var/www/API/setup.sh</code> and set the needed parameters. <br>
-A more detailed guide on the parameters is provided here and here. 
-9. Run the installation scripts (it will handle all the needed setup operations) <br>
-```bash
-sudo bash /var/www/API/install.sh
-```
-10. When it will have finished it will automatically reboot the system and then you are ready to go!
-## Personalized domains
-During the installation process a DNS server will be set up and you will be able to access all the DNS saved on it by connecting to the Raspberry Pi hotspot. <br>
-Here we list all the created domains and their description:
-- <code>ui.raspberry.epfl.com</code>: user interface
-- <code>api.raspberry.epfl.com</code>: api gateway
-- <code>websocket.raspberry.epfl.com</code>: websocket gateway
+6. Go to /var/www and modify the <code>settings</code> files of the services
+7. Restart the system
+8. When the system has started up check that no errors are present in the log files
 
-The domains has been chosen to avoid any possible problem with existing domain. </br>
-It's highly recomended to avoid changing these DNS.
-
-## Structure
-The structure of this repository is the following:
+## Code Structure
+The code structure is:
 ```bash
 ├───index.py # It contains the Flask app definition
 ├───install.sh # Script that handles the installation
@@ -117,38 +55,40 @@ The structure of this repository is the following:
     │   ├─── connection.py # Handles the connection
     │   ├─── models.py # Handles the database management for the models
     │   └─── textures.py # Handles the database management for the textures
-    ├───errors.py # Management of the errors
+    ├───colors.py # Utilities functions for color management
+    ├───logging.py # Management of the errors
     ├───serverImplementation.py # Implementation of all the functions
     └───settings.py # Main settings of the application
 
 ```
 
-## User Interface Integration
+## User Interface
 You should define the user interface repository url inside the <code>install.sh</code> at the following line of code:
 ```bash
-USER_INTERFACE_REPOSITORY_URL=""
+website_repo_url=""
 ```
-with this line of code you will define the repository url for the user interface. <br>
 You can both choose to use the default user interface (its repository is [here](https://gitlab.epfl.ch/create-lab/sensing-with-vr/user-interface)) or create a new one. <br>
-If you want to create a new user interface you can find the API endpoints in the docs folder.
+If you want to create a new user interface you should have a look at <code>index.py</code> for the endpoints available.
 
-## WebSocket Integration
+
+## WebSocket Server
 You should define the websocket repository url inside the <code>install.sh</code> at the following line of code:
 ```bash
-WEBSOCKET_REPOSITORY_URL=""
+websocket_server_repo_url=""
 ```
-with this line of code you will define the repository url for the websocket interface. <br>
-You can both choose to use the default user interface (its repository is [here](https://gitlab.epfl.ch/create-lab/sensing-with-vr/user-interface)) or create a new one. <br>
-If you want to create a new one keep in mind that you should implement the following endpoints:
-- <code>/model_created</code> [POST]: this endpoint will be called when a model has been created.
-- <code>/model_updated</code> [PUT]: this endpoint will be called when a model has been uploaded.
-- <code>/model_delete</code> [DELETE]: this endpoint will be called when a model has been deleted.
-- <code>/texture_created</code> [POST]: this endpoint will be called when a new texture has been created.
-- <code>/texture_deleted</code> [DELETE]: this endpoint will be called when a texture has been deleted.
+You can both choose to use the default user interface (its repository is [here](https://gitlab.epfl.ch/create-lab/sensing-with-vr/websocket-server)) or create a new one. <br>
+The Websocket Server choosen doesn't affect the API server but affect the ability of the User Interface and the Headset to communicate between each other.
 
-If you use the default virtual environment or the default user interface you should also implement the following personalized events:
-- <code>model_texture_selected</code>: event thrown when the texture of a model has been selected. It can be thrown both from the virtual environment or from the user interface.
-- <code>model_texture_deselected</code>: event thrown when the texture of a model has been deselected. It can be thrown both from the virtual environment or from the user interface.
+## Errors management
+All the errors produced by the server will be writen in files available in the folder <code>/var/www/API</code>. In this folder there will be both the file for the errors generated from the server and the file for the errors generated by <code>supervisord</code> which is a process control system used to manage the server <br>
+If something goes wrong the server will generate automatically an unique ID that can be used to identify the error.
+
+## Development conditions
+The system has been developed in the following conditions:
+- Python 3.11
+- Raspberry Pi OS 32-bit with desktop kernel version 5.15 and Debian version 11
+- Raspberry Pi 3 B+
+
 
 ## Authors
 This repository is part of the project *"Mixed Reality Environment For Harvesting Study"* done by Alessandro Dalbesio.<br>
