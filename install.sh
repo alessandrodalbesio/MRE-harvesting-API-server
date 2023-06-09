@@ -305,6 +305,5 @@
     echo "$dnsmasq_conf_file" | sudo tee -a /etc/dnsmasq.conf > /dev/null
 
 # Step 10: Final configurations
-    #sudo rm $(pwd)/parameters.env
-    #sudo rm $(pwd)/install.sh
+    sudo rm -rf $(pwd)
     sudo reboot

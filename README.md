@@ -26,12 +26,12 @@ The name you will choose for the network and its password is not important for t
 
 ### Installation
 To install the server you should follow these steps:
-1. Open a new terminal
+1. Open a new terminal 
 2. Create a new directory
 ```bash
 sudo mkdir /home/<username>/server
 ```
-The default username is <b>pi</b>.
+The default username is <b>pi</b>. <br>
 3. Clone the repository
 ```bash
 git clone https://gitlab.epfl.ch/create-lab/sensing-with-vr/api-server.git /home/<username>/server
@@ -63,8 +63,11 @@ Above the default parameters are displayed. You should modify them to make the s
 - <code>access_token</code>: The access token generated to access <code>gitlab.epfl.ch</code>
 
 Take into account that all the <code>.env</code> files are ignored so that you don't push your credentials by mistake on the repository.<br>
-At the end of the installation script the folder will be deleted so you don't need to worry about leaving your credentials on the Raspberry. If you wish after completing the installation you can delete the access token from your account.
-5. Run the installation scripts
+At the end of the installation script the folder will be deleted so you don't need to worry about leaving your credentials on the Raspberry. If you wish after completing the installation you can delete the access token from your account. <br><br>
+<b>IMPORTANT</b>: When you are creating the <code>parameters.env</code> file you MUST use as end of line character the <code>LF</code> character. If you use the <code>CRLF</code> character the installation will fail. <br>
+If you are using Visual Studio Code you can change the end of line character by clicking on the bottom right corner of the editor and selecting <code>LF</code>.<br>
+
+6. Run the installation scripts
 ```bash
 sudo bash ./install.sh
 ```
