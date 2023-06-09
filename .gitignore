@@ -166,3 +166,6 @@ models
 
 # Don't save database files into git
 *.db
+
+# Don't save the .env files
+*.env
